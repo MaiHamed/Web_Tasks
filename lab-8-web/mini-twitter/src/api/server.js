@@ -43,16 +43,43 @@ app.get("/posts/:id/comments", (req, res) => {
   res.json(postComments);
 });
 
+app.post("/posts/:id/comments", (req, res) => {
+  const postId = Number(req.params.id);
+  const { comment } = req.body || {};
+
+  const post = posts.find(p => p.id === postId);
+  if (!post) {
+    return res.status(404).json({ error: "Post not found" });
+  }
+
+  if (!comment) {
+    return res.status(400).json({ error: "Comment text required" });
+  }
+
+  const newComment = {
+    id: commentIdCounter++,
+    postId,
+    comment
+  };
+
+  comments.push(newComment);
+  res.status(201).json(newComment);
+});
+
+
 app.post("/posts", (req, res) => {
-  const { name, content } = req.body;
+  const { name, content } = req.body || {};
 
-  if (!name || !content) return res.status(400).json({ error: "Name and content required" });
+  if (!name || !content) {
+    return res.status(400).json({ error: "Name and content required" });
+  }
 
-  const newPost = { id: nextPostId++, name, content };
+  const newPost = { id: postIdCounter++, name, content };
   posts.push(newPost);
-  comments[newPost.id] = []; 
+
   res.status(201).json(newPost);
 });
+
 
 
 app.put("/posts/:id", (req, res) => {
